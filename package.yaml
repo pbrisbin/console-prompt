@@ -1,0 +1,18 @@
+name: console-prompt
+version: '0.1.0.0'
+category: Console
+author: Patrick Brisbin
+maintainer: pbrisbin@gmail.com
+copyright: 2017 pbrisbin@gmail.com
+license: MIT
+github: pbrisbin/console-prompt
+extra-source-files:
+- README.md
+library:
+  source-dirs: src
+  exposed-modules:
+  - System.Console.Prompt
+  dependencies:
+  - base >=4.7 && <5
+  - text
+  - haskeline
