@@ -10,8 +10,9 @@ If you enjoy [optparse-applicative][], you will probably like this library.
 
 ```hs
 {-# LANGUAGE OverloadedStrings #-}
-module Main where
+module Main (main) where
 
+import Data.Semigroup ((<>))
 import System.Console.Prompt
 
 data Registration = Registration
@@ -175,18 +176,24 @@ under the hood.
 *TODO*: motivate and describe these. Should these be library-provided?
 
 ```hs
-confirm :: Eq a => Prompt a -> Prompt a
-confirm p = do
-    v1 <- p
-    v2 <- p $ relabel "(confirm) "
+{-# LANGUAGE OverloadedStrings #-}
+module Main (main) where
+
+import Data.Semigroup ((<>))
+import System.Console.Prompt
+
+confirm :: Eq a => (Mod -> Prompt a) -> Mod -> Prompt a
+confirm f m = do
+    v1 <- f m
+    v2 <- f $ m <> relabel (++ "(confirm) ")
 
     if v1 == v2
         then return v1
-        else fail "Values don't match"
+        else failPrompt "Values don't match"
 
 main :: IO ()
 main = do
-    password <- execPrompt $ confirm $ str "Password"
+    password <- execPrompt $ confirm str ("Password" <> masked)
     print (password :: Either String String)
 ```
 
@@ -205,9 +212,15 @@ Left "Values don't match"
 ```
 
 ```hs
+{-# LANGUAGE OverloadedStrings #-}
+module Main (main) where
+
+import System.Console.Prompt
+
 retry :: Prompt a -> Prompt a
-retry p = Prompt $
-    either (const $ execPrompt $ retry p) (return . Right) =<< execPrompt p
+retry p = newPrompt go
+  where
+    go = either (const go) (return . Right) =<< execPrompt p
 
 main :: IO ()
 main = do
@@ -231,4 +244,4 @@ stack build --pedantic test
 
 ---
 
-CHANGELOG | LICENSE
+[CHANGELOG](./CHANGELOG.md) | [LICENSE](./LICENSE)

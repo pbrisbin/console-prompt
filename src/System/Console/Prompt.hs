@@ -1,7 +1,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module System.Console.Prompt
     ( Prompt
+    , newPrompt
     , execPrompt
+    , failPrompt
     , parse
     , auto
     , str
@@ -23,9 +25,16 @@ import System.Console.Prompt.Settings
 newtype Prompt a = Prompt { unPrompt :: ExceptT String IO a }
     deriving (Functor, Applicative, Monad)
 
+-- | Construct a new Prompt from a prompting action
+newPrompt :: IO (Either String a) -> Prompt a
+newPrompt = Prompt . ExceptT
+
 -- | Execute a prompt
 execPrompt :: Prompt a -> IO (Either String a)
 execPrompt = runExceptT . unPrompt
+
+failPrompt :: String -> Prompt a
+failPrompt = Prompt . ExceptT . return . Left
 
 -- | Prompt and parse the read value with given function
 parse :: (String -> Either String a) -> Mod -> Prompt a
