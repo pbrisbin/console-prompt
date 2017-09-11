@@ -12,6 +12,8 @@ library:
   source-dirs: src
   exposed-modules:
   - System.Console.Prompt
+  other-modules:
+  - System.Console.Prompt.Settings
   dependencies:
   - base >=4.7 && <5
   - haskeline
