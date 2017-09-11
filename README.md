@@ -133,7 +133,7 @@ under the hood.
 
    ```hs
    agePrompt :: Prompt Int
-   agePrompt = auto "Arg"
+   agePrompt = auto "Age"
    ```
 
    Another similar function is `str`. It's just like `auto` but for `IsString
