@@ -118,14 +118,11 @@ choice to els = parse p . (<> relabel options)
 -- it must be unique.
 --
 boundedEnum :: (Enum a, Bounded a, Show a) => Mod -> Prompt a
-boundedEnum = choice to els
-  where
-    to = head . show
-    els = [minBound..maxBound]
+boundedEnum = choice (head . show) [minBound..maxBound]
 
 -- | Prompt for a @'Bool'@ with @y@ or @n@ as the options
 yesno :: Mod -> Prompt Bool
-yesno = choice to [True, False]
+yesno = choice (cond 'y' 'n') [True, False]
   where
-    to True = 'y'
-    to False = 'n'
+    cond :: a -> a -> Bool -> a
+    cond c a p = if p then c else a
