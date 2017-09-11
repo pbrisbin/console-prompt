@@ -14,5 +14,6 @@ library:
   - System.Console.Prompt
   dependencies:
   - base >=4.7 && <5
-  - text
   - haskeline
+  - text
+  - transformers

@@ -1,5 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module System.Console.Prompt
     ( Prompt
     , execPrompt
@@ -19,6 +18,7 @@ module System.Console.Prompt
     , yesno
     ) where
 
+import Control.Monad.Trans.Except
 import Data.List (find, intersperse)
 import Data.Semigroup (Semigroup(..))
 import Data.String (IsString(..))
@@ -26,20 +26,11 @@ import System.Console.Haskeline
 import Text.Read (readEither)
 
 -- | Composable action that represents prompting the user, and reading input
-data Prompt a = Prompt { execPrompt :: IO (Either String a) }
+newtype Prompt a = Prompt { unPrompt :: ExceptT String IO a }
+    deriving (Functor, Applicative, Monad)
 
-instance Functor Prompt where
-    fmap f p = Prompt $ fmap f <$> execPrompt p
-
-instance Applicative Prompt where
-    pure = Prompt . return . Right
-    pf <*> px = Prompt $ (<*>) <$> execPrompt pf <*> execPrompt px
-
-instance Monad Prompt where
-    pa >>= f = Prompt $
-        either (return . Left) (execPrompt . f) =<< execPrompt pa
-
-    fail = Prompt . return . Left
+execPrompt :: Prompt a -> IO (Either String a)
+execPrompt = runExceptT . unPrompt
 
 -- | Settings describing how to present a prompt and read raw input
 data PromptSettings = PromptSettings
@@ -94,7 +85,7 @@ hidden = input $ getPassword Nothing
 parse :: (String -> Either String a) -> Mod -> Prompt a
 parse p (Mod f) =
     let (PromptSettings l i) = f defaultPromptSettings
-    in Prompt $ maybe (Left "no input") p <$> runInputT defaultSettings (i l)
+    in Prompt $ ExceptT $ maybe (Left "no input") p <$> runInputT defaultSettings (i l)
 
 -- | Prompt for any @'Read' a => a@
 auto :: Read a => Mod -> Prompt a
